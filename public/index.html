@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Image Editor</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Playfair+Display:wght@500;600;700&family=Lora:wght@500;600&family=Merriweather:wght@400;700&family=Roboto+Slab:wght@500;600&family=Inter:wght@400;500;600&family=Montserrat:wght@500;600&family=Poppins:wght@500;600&family=Raleway:wght@500;600&family=Nunito:wght@500;600&family=Oswald:wght@500;600&family=Bebas+Neue&family=Pacifico&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9919926684051306" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+</head>
+<body>
+
+  <!-- ============ LANDING / UPLOAD SCREEN ============ -->
+  <section id="landing" class="landing">
+    <div class="grain"></div>
+    <div class="landing-inner">
+      <p class="eyebrow">PRO EDITOR</p>
+      <h1>Pro Image Editor</h1>
+      <p class="landing-sub">Crop, retouch, and enhance — with AI, entirely in your browser.</p>
+      <label class="upload-cta" for="fileInput">
+        <span>Open an Image</span>
+      </label>
+      <input type="file" id="fileInput" accept="image/*" hidden />
+      <p class="landing-hint">or drag a photo anywhere on this page</p>
+      <div class="landing-footer">
+        <a href="/about.html">About</a>
+        <span>·</span>
+        <a href="/privacy.html">Privacy Policy</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EDITOR WORKSPACE ============ -->
+  <div id="editor" class="editor hidden">
+
+    <header class="topbar">
+      <div class="brand">IMAGE EDITOR</div>
+      <div class="top-tools">
+        <button id="btnUndo" class="icon-btn" title="Undo">↺</button>
+        <button id="btnRedo" class="icon-btn" title="Redo">↻</button>
+        <button id="btnReset" class="icon-btn" title="Reset to original">⟲ Reset</button>
+        <button id="btnZoomOut" class="icon-btn" title="Zoom out">−</button>
+        <span id="zoomLabel" class="zoom-label">100%</span>
+        <button id="btnZoomIn" class="icon-btn" title="Zoom in">+</button>
+      </div>
+      <button id="btnExport" class="export-btn">Export</button>
+    </header>
+
+    <div class="workspace">
+      <!-- Tool rail -->
+      <nav class="tool-rail" id="toolRail">
+        <button class="rail-btn active" data-panel="crop">Crop</button>
+        <button class="rail-btn" data-panel="adjust">Adjust</button>
+        <button class="rail-btn" data-panel="filters">Filters</button>
+        <button class="rail-btn" data-panel="text">Text</button>
+        <button class="rail-btn" data-panel="stickers">Stickers</button>
+        <button class="rail-btn" data-panel="draw">Draw</button>
+        <button class="rail-btn" data-panel="cutout">Cutout</button>
+        <button class="rail-btn" data-panel="layers">Layers</button>
+        <button class="rail-btn" data-panel="animate">Animate</button>
+        <button class="rail-btn ai-rail-btn" data-panel="ai">AI ✦</button>
+      </nav>
+
+      <!-- Context panel -->
+      <aside class="context-panel" id="contextPanel">
+
+        <div class="panel-section active" data-section="crop">
+          <h3>Crop &amp; Transform</h3>
+          <div class="btn-row">
+            <button id="btnRotateLeft" class="chip-btn">⟲ Rotate</button>
+            <button id="btnRotateRight" class="chip-btn">⟳ Rotate</button>
+            <button id="btnFlipH" class="chip-btn">⇋ Flip H</button>
+            <button id="btnFlipV" class="chip-btn">⇵ Flip V</button>
+          </div>
+          <label class="field-label">Free rotate</label>
+          <input type="range" id="rotateSlider" min="-180" max="180" value="0" />
+          <p class="hint">Drag the corner handles on the image to define a crop area.</p>
+          <div class="btn-row">
+            <button id="btnStartCrop" class="chip-btn">Start Crop</button>
+            <button id="btnApplyCrop" class="chip-btn accent">Apply Crop</button>
+          </div>
+        </div>
+
+        <div class="panel-section" data-section="adjust">
+          <h3>Adjustments</h3>
+          <label class="field-label">Exposure</label>
+          <input type="range" class="adjust-slider" data-filter="brightness" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Contrast</label>
+          <input type="range" class="adjust-slider" data-filter="contrast" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Highlights</label>
+          <input type="range" class="adjust-slider" data-filter="highlights" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Shadows</label>
+          <input type="range" class="adjust-slider" data-filter="shadows" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Saturation</label>
+          <input type="range" class="adjust-slider" data-filter="saturation" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Vibrance</label>
+          <input type="range" class="adjust-slider" data-filter="vibrance" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Temperature</label>
+          <input type="range" class="adjust-slider" data-filter="temperature" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Tint</label>
+          <input type="range" class="adjust-slider" data-filter="tint" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Hue</label>
+          <input type="range" class="adjust-slider" data-filter="hue" min="-1" max="1" step="0.01" value="0" />
+          <label class="field-label">Sharpen</label>
+          <input type="range" class="adjust-slider" data-filter="sharpen" min="0" max="1" step="0.01" value="0" />
+          <label class="field-label">Soften</label>
+          <input type="range" class="adjust-slider" data-filter="blur" min="0" max="1" step="0.01" value="0" />
+          <label class="field-label">Grain</label>
+          <input type="range" class="adjust-slider" data-filter="grain" min="0" max="1" step="0.01" value="0" />
+          <label class="field-label">Vignette</label>
+          <input type="range" id="vignetteSlider" min="0" max="1" step="0.01" value="0" />
+          <p class="hint">Highlights/Shadows/Vibrance are approximations — canvas filters can't do a true tone curve, but these get close.</p>
+          <button id="btnResetAdjust" class="chip-btn">Reset adjustments</button>
+        </div>
+
+        <div class="panel-section" data-section="filters">
+          <h3>Looks <span class="badge-free" id="filterCount"></span></h3>
+          <div class="filter-grid" id="filterGrid"></div>
+        </div>
+
+        <div class="panel-section" data-section="text">
+          <h3>Text</h3>
+          <button id="btnAddText" class="chip-btn accent">+ Add Text</button>
+          <label class="field-label">Font</label>
+          <select id="textFont">
+            <optgroup label="Serif / Display">
+              <option value="Cormorant Garamond">Cormorant Garamond</option>
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Lora">Lora</option>
+              <option value="Merriweather">Merriweather</option>
+              <option value="Roboto Slab">Roboto Slab</option>
+              <option value="Georgia">Georgia</option>
+            </optgroup>
+            <optgroup label="Sans">
+              <option value="Inter">Inter</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Raleway">Raleway</option>
+              <option value="Nunito">Nunito</option>
+              <option value="Oswald">Oswald</option>
+            </optgroup>
+            <optgroup label="Display / Script">
+              <option value="Bebas Neue">Bebas Neue</option>
+              <option value="Pacifico">Pacifico</option>
+              <option value="Dancing Script">Dancing Script</option>
+              <option value="Courier New">Courier New</option>
+            </optgroup>
+          </select>
+          <label class="field-label">Size</label>
+          <input type="range" id="textSize" min="10" max="200" value="48" />
+          <label class="field-label">Color</label>
+          <input type="color" id="textColor" value="#f2f0ea" />
+          <label class="field-label">Letter spacing</label>
+          <input type="range" id="textSpacing" min="-50" max="400" value="0" />
+          <label class="field-label">Line height</label>
+          <input type="range" id="textLineHeight" min="0.7" max="2.5" step="0.05" value="1.16" />
+          <label class="field-label">Opacity</label>
+          <input type="range" id="textOpacity" min="0" max="1" step="0.01" value="1" />
+          <div class="btn-row">
+            <button id="textBold" class="chip-btn">B</button>
+            <button id="textItalic" class="chip-btn">I</button>
+            <button id="textUnderline" class="chip-btn">U</button>
+          </div>
+          <label class="field-label">Align</label>
+          <div class="btn-row">
+            <button id="textAlignLeft" class="chip-btn active">Left</button>
+            <button id="textAlignCenter" class="chip-btn">Center</button>
+            <button id="textAlignRight" class="chip-btn">Right</button>
+          </div>
+          <label class="field-label">Shadow</label>
+          <div class="btn-row">
+            <button id="textShadowToggle" class="chip-btn">Toggle shadow</button>
+          </div>
+          <p class="hint">Select a text layer on the canvas, then adjust its style here.</p>
+        </div>
+
+        <div class="panel-section" data-section="stickers">
+          <h3>Stickers &amp; Overlays</h3>
+          <label class="field-label">Quick stickers</label>
+          <div class="emoji-grid" id="emojiGrid"></div>
+          <label class="field-label">Upload your own overlay (PNG)</label>
+          <input type="file" id="overlayInput" accept="image/*" />
+        </div>
+
+        <div class="panel-section" data-section="draw">
+          <h3>Draw &amp; Retouch</h3>
+          <div class="btn-row">
+            <button id="toolBrush" class="chip-btn active">Brush</button>
+            <button id="toolBlur" class="chip-btn">Blur Retouch</button>
+          </div>
+          <label class="field-label">Brush size</label>
+          <input type="range" id="brushSize" min="2" max="80" value="14" />
+          <label class="field-label">Brush color</label>
+          <input type="color" id="brushColor" value="#c9a227" />
+          <button id="btnStopDraw" class="chip-btn">Done drawing</button>
+        </div>
+
+        <div class="panel-section" data-section="cutout">
+          <h3>Background Cutout</h3>
+          <p class="hint">Click the background with the Magic Wand to remove areas of similar color. Touch up edges with Erase/Restore. Works best on fairly plain/uniform backgrounds.</p>
+          <div class="btn-row">
+            <button id="wandModeBtn" class="chip-btn active">Magic Wand</button>
+            <button id="eraseModeBtn" class="chip-btn">Erase</button>
+            <button id="restoreModeBtn" class="chip-btn">Restore</button>
+          </div>
+          <label class="field-label">Wand tolerance</label>
+          <input type="range" id="wandTolerance" min="5" max="120" value="32" />
+          <label class="field-label">Brush size (erase/restore)</label>
+          <input type="range" id="cutoutBrushSize" min="4" max="100" value="24" />
+          <div class="actions">
+            <button id="btnResetCutout" class="chip-btn">Reset</button>
+            <button id="btnApplyCutout" class="chip-btn accent">Apply Cutout</button>
+          </div>
+        </div>
+
+        <div class="panel-section" data-section="layers">
+          <h3>Layers</h3>
+          <ul id="layersList" class="layers-list"></ul>
+        </div>
+
+        <div class="panel-section" data-section="animate">
+          <h3>Animated Thumbnail <span class="badge-free" id="animCount"></span></h3>
+          <p class="hint">Pick a preset — each renders a real, downloadable animated GIF (50+ frames), entirely in your browser.</p>
+          <div class="filter-grid" id="animGrid"></div>
+          <div id="animPreviewWrap"></div>
+        </div>
+
+        <div class="panel-section" data-section="ai">
+          <h3>AI Tools <span class="badge-free">free</span></h3>
+          <button class="ai-btn" id="aiRemoveBg">
+            <span>Remove Background (AI)</span>
+            <small>One click — runs on our own server, no Hugging Face, no rate limit. First call may take a few extra seconds.</small>
+          </button>
+          <button class="ai-btn" id="aiDebugRoundtrip" style="border-color:#666">
+            <span>Debug: Round-trip test</span>
+            <small>Temporary — tests if striping comes from basic image handling (no AI involved)</small>
+          </button>
+          <p class="hint">Not quite right? Fine-tune the result in the <strong>Cutout</strong> tab (Erase/Restore).</p>
+          <button class="ai-btn" id="aiUpscale">
+            <span>Enhance &amp; Upscale</span>
+            <small>Runs in your browser — sharpens and enlarges the image</small>
+          </button>
+          <button class="ai-btn" id="aiStyleTransfer">
+            <span>Style Match</span>
+            <small>Matches the color mood of a reference photo — runs instantly, no model download</small>
+          </button>
+          <input type="file" id="styleImageInput" accept="image/*" hidden />
+          <button class="ai-btn" id="aiRemoveObject">
+            <span>Remove Object <span class="badge-free" style="border-color:#b5533c;color:#b5533c">experimental</span></span>
+            <small>Paint over the object with the Brush tool first — depends on a free hosted model, may be unreliable</small>
+          </button>
+          <input type="text" id="inpaintPrompt" placeholder="Optional: describe what should fill the gap" />
+
+          <div class="pro-upsell">
+            <h4>Need more power?</h4>
+            <p>These free tools are great for quick edits. For heavier-duty AI enhancement, these pro tools go further:</p>
+            <a class="pro-card" href="https://www.photoroom.com/" target="_blank" rel="noopener">Photoroom →</a>
+            <a class="pro-card" href="https://clipdrop.co/" target="_blank" rel="noopener">Clipdrop →</a>
+            <a class="pro-card" href="https://www.remove.bg/" target="_blank" rel="noopener">remove.bg →</a>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Canvas stage -->
+      <main class="stage">
+        <div class="stage-toolbar">
+          <label class="chip-btn accent" for="newImageInput">+ Upload New Image</label>
+          <input type="file" id="newImageInput" accept="image/*" hidden />
+        </div>
+        <div class="canvas-frame" id="canvasFrame">
+          <canvas id="mainCanvas"></canvas>
+        </div>
+        <div class="canvas-frame hidden" id="cutoutFrame">
+          <canvas id="cutoutCanvas"></canvas>
+        </div>
+        <div id="aiOverlay" class="ai-overlay hidden">
+          <div class="scan-line"></div>
+          <p id="aiOverlayText">Working…</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

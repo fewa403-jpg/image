@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://image-editor-app-oprs.onrender.com/sitemap.xml
