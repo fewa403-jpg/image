@@ -292,6 +292,12 @@ input[type="color"] { padding: 3px; height: 36px; cursor: pointer; }
   transition: border-color 0.2s ease, transform 0.15s ease, color 0.2s ease;
 }
 .filter-thumb:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+.filter-thumb-label { pointer-events: auto; }
+.filter-thumb.expanded { border-color: var(--gold); color: var(--gold); background: rgba(201,162,39,0.08); }
+.filter-thumb.expanded:hover { transform: none; }
+.filter-slider-row { display: none; margin-top: 8px; }
+.filter-thumb.expanded .filter-slider-row { display: block; }
+.filter-slider-row input[type="range"] { width: 100%; margin: 0; }
 
 .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 14px; }
 .emoji-grid button {

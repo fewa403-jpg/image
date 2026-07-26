@@ -392,32 +392,85 @@ const GRADE_DEFS = [
 ];
 const INTENSITY_LEVELS = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1.0];
 
-const PRESETS = [{ name: 'Original', filters: () => [] }];
-GRADE_DEFS.forEach((grade) => {
-  INTENSITY_LEVELS.forEach((t, i) => {
-    PRESETS.push({ name: `${grade.name} ${i + 1}`, filters: () => grade.build(t) });
-  });
-});
-
 function setupFilterPresets() {
   const grid = $('filterGrid');
   const countLabel = $('filterCount');
-  if (countLabel) countLabel.textContent = `${PRESETS.length} looks`;
-  PRESETS.forEach((preset) => {
-    const div = document.createElement('div');
-    div.className = 'filter-thumb';
-    div.textContent = preset.name;
-    div.addEventListener('click', () => {
+  if (countLabel) countLabel.textContent = `${GRADE_DEFS.length} looks`;
+  grid.innerHTML = '';
+
+  // "Original" card — clears whichever Look is active
+  const resetCard = document.createElement('div');
+  resetCard.className = 'filter-thumb';
+  resetCard.textContent = 'Original';
+  resetCard.addEventListener('click', () => {
+    transitionEffect(() => {
+      collapseAllFilterCards();
+      document.querySelectorAll('.adjust-slider').forEach((s) => (s.value = 0));
+      baseImage.filters = [];
+      baseImage.applyFilters();
+      canvas.renderAll();
+      pushHistory();
+    });
+  });
+  grid.appendChild(resetCard);
+
+  GRADE_DEFS.forEach((grade) => {
+    const card = document.createElement('div');
+    card.className = 'filter-thumb';
+
+    const label = document.createElement('div');
+    label.className = 'filter-thumb-label';
+    label.textContent = grade.name;
+    card.appendChild(label);
+
+    const sliderRow = document.createElement('div');
+    sliderRow.className = 'filter-slider-row';
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = 0;
+    slider.max = 100;
+    slider.value = 60; // sensible default intensity the moment a Look is opened
+    sliderRow.appendChild(slider);
+    card.appendChild(sliderRow);
+    grid.appendChild(card);
+
+    // Click the name: open this card's slider (closing any other open one)
+    // and apply the Look immediately at the slider's current value.
+    label.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasOpen = card.classList.contains('expanded');
+      collapseAllFilterCards();
+      if (wasOpen) return; // clicking an already-open card just closes it
+
       transitionEffect(() => {
+        card.classList.add('expanded');
         document.querySelectorAll('.adjust-slider').forEach((s) => (s.value = 0));
-        baseImage.filters = preset.filters();
-        baseImage.applyFilters();
-        canvas.renderAll();
+        applyGradeLive(grade, Number(slider.value) / 100);
         pushHistory();
       });
     });
-    grid.appendChild(div);
+
+    // Dragging the slider: live preview, no crossfade (would be jarring
+    // mid-drag) — just an instant, continuous update.
+    slider.addEventListener('input', () => {
+      applyGradeLive(grade, Number(slider.value) / 100);
+    });
+    // Commit one history entry when the user releases the slider, not on
+    // every tick while dragging.
+    slider.addEventListener('change', () => {
+      pushHistory();
+    });
   });
+}
+
+function collapseAllFilterCards() {
+  document.querySelectorAll('#filterGrid .filter-thumb.expanded').forEach((el) => el.classList.remove('expanded'));
+}
+
+function applyGradeLive(grade, t) {
+  baseImage.filters = grade.build(t);
+  baseImage.applyFilters();
+  canvas.renderAll();
 }
 
 // A quick "transition": snapshot the current look, swap to the new one, then
@@ -697,7 +750,9 @@ const SPEEDS = [{ name: 'Slow', duration: 6 }, { name: 'Fast', duration: 3 }];
 
 function filtersForGrade(gradeName) {
   if (gradeName === 'None') return null;
-  return PRESETS.filter((p) => p.name.startsWith(gradeName + ' '));
+  const grade = GRADE_DEFS.find((g) => g.name === gradeName);
+  if (!grade) return null;
+  return INTENSITY_LEVELS.map((t) => ({ filters: () => grade.build(t) }));
 }
 
 const ANIM_PRESETS = [];
